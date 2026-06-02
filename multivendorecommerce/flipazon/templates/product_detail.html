@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.pname }} - Details - Flipazon</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'flipazon/dashboard.css' %}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-light">
+
+<!-- Sticky Header Navigation -->
+<nav class="sub-navbar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a href="/flipazon/customer-dashboard/" class="sub-nav-brand">
+            <i data-lucide="shopping-bag" class="text-teal" style="color: var(--customer-primary);"></i>
+            <span class="fw-bold">Flipazon</span>
+        </a>
+        <div class="sub-nav-links">
+            <a href="/flipazon/customer-dashboard/" class="sub-nav-link">
+                <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/flipazon/all-products/" class="sub-nav-link active" style="color: var(--customer-primary); font-weight: 600;">
+                <i data-lucide="store" style="width: 16px; height: 16px;"></i>
+                <span>Market</span>
+            </a>
+            <a href="/flipazon/view-cart/" class="sub-nav-link">
+                <i data-lucide="shopping-cart" style="width: 16px; height: 16px;"></i>
+                <span>Cart</span>
+            </a>
+            <a href="/flipazon/view-wishlist/" class="sub-nav-link">
+                <i data-lucide="heart" style="width: 16px; height: 16px;"></i>
+                <span>Wishlist</span>
+            </a>
+            <a href="/flipazon/view-orders/" class="sub-nav-link">
+                <i data-lucide="package" style="width: 16px; height: 16px;"></i>
+                <span>Orders</span>
+            </a>
+            <a href="/flipazon/logout/" class="btn-premium btn-danger-custom btn-sm" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container animate-fade-in mb-5">
+    <div class="row g-5">
+        <!-- Left Column: Image switcher & Quick Buy Actions -->
+        <div class="col-lg-5">
+            <div class="position-sticky" style="top: 100px;">
+                <!-- Main image display wrap -->
+                <div class="detail-main-img-wrap shadow-sm">
+                    <img id="main-gallery-view" src="{{ product.get_image1 }}" alt="{{ product.pname }}" class="detail-main-img">
+                </div>
+
+                <!-- Thumbnails switcher grid -->
+                <div class="detail-thumb-grid">
+                    <div class="detail-thumb active" onclick="switchImage('{{ product.get_image1 }}', this)">
+                        <img src="{{ product.get_image1 }}" alt="Thumbnail 1">
+                    </div>
+                    <div class="detail-thumb" onclick="switchImage('{{ product.get_image2 }}', this)">
+                        <img src="{{ product.get_image2 }}" alt="Thumbnail 2">
+                    </div>
+                </div>
+
+                <!-- E-Commerce Buttons -->
+                <div class="mt-4 row g-2">
+                    {% if product.pquantity > 0 %}
+                    <div class="col-sm-6">
+                        <a href="/flipazon/add-to-cart/{{ product.pid }}/" class="btn-premium btn-customer w-100 py-3" style="font-size: 1.05rem; background: linear-gradient(135deg, #ff9f00 0%, #ff8c00 100%); border-color: #ff8c00;">
+                            <i data-lucide="shopping-cart" style="width: 20px; height: 20px;"></i>
+                            <span>Add to Cart</span>
+                        </a>
+                    </div>
+                    <div class="col-sm-6">
+                        <a href="/flipazon/add-to-cart/{{ product.pid }}/" class="btn-premium btn-customer w-100 py-3" style="font-size: 1.05rem; background: linear-gradient(135deg, #fb641b 0%, #ff5500 100%); border-color: #ff5500;">
+                            <i data-lucide="zap" style="width: 20px; height: 20px;"></i>
+                            <span>Buy Now</span>
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="col-12">
+                        <button class="btn-premium btn-secondary w-100 py-3" disabled style="opacity: 0.6; font-size: 1.05rem;">
+                            <i data-lucide="shopping-bag" style="width: 20px; height: 20px;"></i>
+                            <span>Currently Out of Stock</span>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Product details & Seller specifications -->
+        <div class="col-lg-7">
+            <!-- Breadcrumbs / category tag -->
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="product-badge">{{ product.ptype }}</span>
+                <a href="/flipazon/add-to-wishlist/{{ product.pid }}/" class="rating-badge border-0" style="color: var(--customer-accent-rose); background-color: var(--customer-accent-rose-light); font-size: 0.85rem; padding: 0.25rem 0.6rem;">
+                    <i data-lucide="heart" style="width: 14px; height: 14px; fill: var(--customer-accent-rose);"></i>
+                    <span>Save to Wishlist</span>
+                </a>
+            </div>
+
+            <!-- Product name -->
+            <h1 class="fw-bold text-slate-900 mb-2" style="font-size: 2.2rem; letter-spacing: -0.03em;">{{ product.pname }}</h1>
+
+            <!-- Ratings overview badge -->
+            <div class="d-flex align-items-center gap-2 mb-3">
+                {% if avg_rating > 0 %}
+                <span class="rating-badge" style="font-size: 1rem; padding: 0.35rem 0.75rem;">
+                    <i data-lucide="star" style="width: 16px; height: 16px; fill: #d97706; stroke: #d97706;"></i>
+                    <span>{{ avg_rating }}</span>
+                </span>
+                {% endif %}
+                <span class="text-muted small">({{ reviews|length }} customer reviews)</span>
+            </div>
+
+            <!-- Price & Stock tag -->
+            <div class="d-flex align-items-baseline gap-3 mb-4">
+                <div class="fw-bold" style="font-size: 2.25rem; color: var(--customer-primary-dark);">₹{{ product.pprice }}</div>
+                <div>
+                    {% if product.pquantity > 5 %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1" style="font-size: 0.85rem;">
+                        In Stock ({{ product.pquantity }} left)
+                    </span>
+                    {% elif product.pquantity > 0 %}
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2.5 py-1" style="font-size: 0.85rem;">
+                        Only {{ product.pquantity }} left! Order soon
+                    </span>
+                    {% else %}
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1" style="font-size: 0.85rem;">
+                        Out of Stock
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Description card -->
+            <div class="custom-card mb-4" style="padding: 1.5rem;">
+                <h4 class="fw-bold mb-2 text-slate-800" style="font-size: 1.1rem;">Product Description</h4>
+                <p class="text-slate-600 m-0" style="font-size: 0.95rem; line-height: 1.6;">
+                    {{ product.pdescription }}
+                </p>
+            </div>
+
+            <!-- Seller Shop Specifications Box -->
+            <div class="seller-info-box mb-5">
+                <h5 class="fw-bold text-slate-800 mb-2 d-flex align-items-center gap-1.5" style="font-size: 1.05rem;">
+                    <i data-lucide="store" style="width: 18px; height: 18px; color: var(--customer-primary);"></i>
+                    <span>Seller Information</span>
+                </h5>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <div class="text-muted small">Seller Account</div>
+                        <div class="fw-semibold text-slate-800" style="font-size: 0.95rem;">{{ product.seller.name }}</div>
+                        <div class="text-slate-600 small">{{ product.seller.email }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Registered Shop</div>
+                        <div class="fw-bold text-teal" style="font-size: 0.95rem; color: var(--customer-primary-dark);">
+                            {{ product.seller.shop_name|default:"Flipazon Partner Store" }}
+                        </div>
+                        <div class="text-muted small mt-1">
+                            <i data-lucide="map-pin" style="width: 12px; height: 12px; display: inline; vertical-align: text-bottom;"></i>
+                            {{ product.seller.shop_address|default:"Online Warehouse" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews Feed -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold m-0" style="font-size: 1.35rem; letter-spacing: -0.02em;">Reviews Feed</h3>
+                <a href="/flipazon/add-review/{{ product.pid }}/" class="btn-premium btn-outline-customer btn-sm" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                    <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                    <span>Write Review</span>
+                </a>
+            </div>
+
+            {% if reviews %}
+                <div class="d-flex flex-column gap-3">
+                    {% for review in reviews %}
+                    <div class="review-card" style="padding: 1.25rem;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="user-avatar customer-avatar" style="width: 32px; height: 32px; font-size: 0.9rem; font-weight: 600;">
+                                    {{ review.customer.name|slice:":1"|upper }}
+                                </div>
+                                <div class="fw-semibold text-slate-800" style="font-size: 0.9rem;">{{ review.customer.name }}</div>
+                            </div>
+                            <span class="text-muted small" style="font-size: 0.8rem;">
+                                {{ review.created_at|date:"M d, Y" }}
+                            </span>
+                        </div>
+                        
+                        <div class="mb-2 review-rating-stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i data-lucide="star" style="width: 14px; height: 14px; fill: #fbbf24; stroke: #fbbf24;"></i>
+                                {% else %}
+                                    <i data-lucide="star" style="width: 14px; height: 14px; color: var(--border-color);"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <p class="text-slate-600 m-0" style="font-style: italic; font-size: 0.9rem; line-height: 1.5;">
+                            "{{ review.review }}"
+                        </p>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-light text-center py-4 border" style="border-radius: var(--radius-md);">
+                    <i data-lucide="message-square" class="text-muted mb-2 d-block mx-auto" style="width: 24px; height: 24px;"></i>
+                    <span class="text-muted small">No reviews written for this product yet.</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    // Image gallery thumbnail switcher
+    function switchImage(src, element) {
+        document.getElementById('main-gallery-view').src = src;
+        
+        // Remove active class from all thumbnails
+        let thumbs = document.querySelectorAll('.detail-thumb');
+        thumbs.forEach(t => t.classList.remove('active'));
+        
+        // Add active class to clicked thumbnail
+        element.classList.add('active');
+    }
+</script>
+</body>
+</html>

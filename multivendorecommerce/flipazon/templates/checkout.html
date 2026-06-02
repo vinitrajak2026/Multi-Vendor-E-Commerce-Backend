@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Flipazon</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'flipazon/dashboard.css' %}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 2rem;
+        }
+        @media (max-width: 992px) {
+            .checkout-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<!-- Sticky Header Navigation -->
+<nav class="sub-navbar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a href="/flipazon/customer-dashboard/" class="sub-nav-brand">
+            <i data-lucide="shopping-bag" class="text-teal" style="color: var(--customer-primary);"></i>
+            <span class="fw-bold">Flipazon</span>
+        </a>
+        <div class="sub-nav-links">
+            <a href="/flipazon/customer-dashboard/" class="sub-nav-link">
+                <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/flipazon/all-products/" class="sub-nav-link">
+                <i data-lucide="store" style="width: 16px; height: 16px;"></i>
+                <span>Market</span>
+            </a>
+            <a href="/flipazon/view-cart/" class="sub-nav-link active" style="color: var(--customer-primary); font-weight: 600;">
+                <i data-lucide="shopping-cart" style="width: 16px; height: 16px;"></i>
+                <span>Cart</span>
+            </a>
+            <a href="/flipazon/view-wishlist/" class="sub-nav-link">
+                <i data-lucide="heart" style="width: 16px; height: 16px;"></i>
+                <span>Wishlist</span>
+            </a>
+            <a href="/flipazon/view-orders/" class="sub-nav-link">
+                <i data-lucide="package" style="width: 16px; height: 16px;"></i>
+                <span>Orders</span>
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container animate-fade-in mb-5">
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <i data-lucide="credit-card" class="text-teal" style="width: 28px; height: 28px; color: var(--customer-primary);"></i>
+        <h2 class="fw-bold m-0" style="letter-spacing: -0.03em;">Secure Checkout</h2>
+    </div>
+
+    <form method="post" action="/flipazon/place-order/" class="customer-form">
+        {% csrf_token %}
+        <input type="hidden" id="payment_method" name="payment_method" value="Cash on Delivery">
+
+        <div class="checkout-layout">
+            <!-- Left Side: Address & Payment Selection -->
+            <div class="d-flex flex-column gap-4">
+                <!-- Shipping Address Card -->
+                <div class="custom-card">
+                    <h4 class="fw-bold mb-3 d-flex align-items-center gap-1.5" style="font-size: 1.15rem;">
+                        <span class="rounded-circle bg-teal text-white d-inline-flex align-items-center justify-content-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem; background-color: var(--customer-primary);">1</span>
+                        <span>Select Shipping Address</span>
+                    </h4>
+
+                    <!-- Addresses Radio List -->
+                    <div class="d-flex flex-column gap-3 mb-3">
+                        {% for addr in addresses %}
+                        <div class="checkout-address-card {% if forloop.first %}selected{% endif %}" onclick="selectAddress(this, '{{ addr.id }}')">
+                            <input type="radio" name="address_id" id="addr_{{ addr.id }}" value="{{ addr.id }}" class="checkout-radio form-check-input" {% if forloop.first %}checked{% endif %}>
+                            <div class="fw-semibold text-slate-800" style="font-size: 0.95rem;">{{ addr.address_line1 }}</div>
+                            <div class="text-slate-600 small">{{ addr.city }}, {{ addr.state }}</div>
+                            <div class="text-muted small">{{ addr.postal_code }}, {{ addr.country }}</div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- New Address Radio option -->
+                        <div class="checkout-address-card" onclick="selectAddress(this, 'new')">
+                            <input type="radio" name="address_id" id="addr_new" value="new" class="checkout-radio form-check-input" {% if not addresses %}checked{% endif %}>
+                            <div class="fw-semibold text-slate-800 d-flex align-items-center gap-1.5" style="font-size: 0.95rem;">
+                                <i data-lucide="plus-circle" style="width: 18px; height: 18px; color: var(--customer-primary);"></i>
+                                <span>Ship to a New Address</span>
+                            </div>
+                            <p class="text-muted small m-0 mt-1">Select this option to input a different shipping address.</p>
+                        </div>
+                    </div>
+
+                    <!-- New Address Form Fields (Toggle expand) -->
+                    <div id="new-address-form-block" class="p-3 border rounded mt-3" style="display: {% if not addresses %}block{% else %}none{% endif %}; border-radius: var(--radius-md); background-color: #f8fafc;">
+                        <div class="fw-bold mb-3" style="font-size: 0.95rem;">Enter New Shipping Details</div>
+                        <div class="mb-3 form-group">
+                            <input type="text" name="address_line1" class="form-control bg-white" placeholder="Street Address, Building, Apartment No.">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-group">
+                                <input type="text" name="city" class="form-control bg-white" placeholder="City">
+                            </div>
+                            <div class="col-md-6 mb-3 form-group">
+                                <input type="text" name="state" class="form-control bg-white" placeholder="State">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-md-0 form-group">
+                                <input type="text" name="postal_code" class="form-control bg-white" placeholder="Postal Code">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <input type="text" name="country" class="form-control bg-white" value="India" placeholder="Country">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Selection Card -->
+                <div class="custom-card">
+                    <h4 class="fw-bold mb-3 d-flex align-items-center gap-1.5" style="font-size: 1.15rem;">
+                        <span class="rounded-circle bg-teal text-white d-inline-flex align-items-center justify-content-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem; background-color: var(--customer-primary);">2</span>
+                        <span>Select Payment Option</span>
+                    </h4>
+
+                    <div class="payment-card-grid">
+                        <div class="payment-method-card selected" onclick="selectPayment('Cash on Delivery', this)">
+                            <i data-lucide="banknote" class="text-teal" style="color: var(--customer-primary);"></i>
+                            <div class="small">Cash on Delivery</div>
+                        </div>
+                        <div class="payment-method-card" onclick="selectPayment('Credit/Debit Card', this)">
+                            <i data-lucide="credit-card" class="text-muted"></i>
+                            <div class="small">Credit/Debit Card</div>
+                        </div>
+                        <div class="payment-method-card" onclick="selectPayment('UPI / NetBanking', this)">
+                            <i data-lucide="smartphone" class="text-muted"></i>
+                            <div class="small">UPI / QR Scan</div>
+                        </div>
+                    </div>
+
+                    <!-- Card Details Form Block -->
+                    <div id="card-details-block" class="p-3 border rounded mt-3" style="display: none; border-radius: var(--radius-md); background-color: #f8fafc;">
+                        <div class="fw-bold mb-3 text-slate-800" style="font-size: 0.95rem;">Enter Credit/Debit Card Details</div>
+                        <div class="mb-3 form-group">
+                            <label class="form-label small text-slate-600 fw-semibold">Cardholder Name</label>
+                            <input type="text" name="card_name" id="card_name" class="form-control bg-white" placeholder="Cardholder Name">
+                        </div>
+                        <div class="mb-3 form-group">
+                            <label class="form-label small text-slate-600 fw-semibold">Card Number</label>
+                            <input type="text" name="card_number" id="card_number" class="form-control bg-white" placeholder="XXXX XXXX XXXX XXXX" maxlength="19">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 mb-md-0 form-group">
+                                <label class="form-label small text-slate-600 fw-semibold">Expiry Date</label>
+                                <input type="text" name="card_expiry" id="card_expiry" class="form-control bg-white" placeholder="MM/YY" maxlength="5">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="form-label small text-slate-600 fw-semibold">CVV</label>
+                                <input type="password" name="card_cvv" id="card_cvv" class="form-control bg-white" placeholder="XXX" maxlength="3">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- UPI / QR Scan Form Block -->
+                    <div id="upi-qr-block" class="p-3 border rounded mt-3 text-center" style="display: none; border-radius: var(--radius-md); background-color: #f8fafc;">
+                        <div class="fw-bold mb-2 text-slate-800" style="font-size: 0.95rem;">Pay via UPI QR Code</div>
+                        <p class="text-muted small mb-3">Scan this QR code with any UPI app (GPay, PhonePe, Paytm, etc.) to complete payment.</p>
+                        <div class="mb-3">
+                            <img src="{{ seller.get_upi_qr }}" alt="UPI QR Code" class="img-thumbnail shadow-sm p-2 bg-white" style="width: 200px; height: 200px; border-radius: var(--radius-md);">
+                        </div>
+                        <div class="small fw-bold text-slate-800 mb-1">UPI ID: <span class="text-indigo">{{ seller.upi_id|default:"revanth@upi" }}</span></div>
+                        <div class="small text-muted mb-3">Store Name: <span class="fw-semibold">{{ seller.shop_name|default:seller.name }}</span></div>
+                        <div class="form-group mx-auto" style="max-width: 320px;">
+                            <label class="form-label small text-slate-600 fw-semibold mb-1">Enter 12-Digit UPI Transaction ID</label>
+                            <input type="text" name="upi_transaction_id" id="upi_transaction_id" class="form-control bg-white text-center fw-semibold text-slate-800" placeholder="e.g. 123456789012" maxlength="12">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Order Summary Panel -->
+            <div class="position-sticky" style="top: 100px; height: fit-content;">
+                <div class="custom-card shadow-sm" style="padding: 1.5rem;">
+                    <h4 class="fw-bold text-slate-800 border-bottom pb-2 mb-3" style="font-size: 1.1rem; letter-spacing: -0.02em;">Order Summary</h4>
+
+                    <!-- Mini Cart List -->
+                    <div class="d-flex flex-column gap-2 mb-3 border-bottom pb-3">
+                        {% for item in cart %}
+                        <div class="d-flex justify-content-between align-items-center small">
+                            <div class="text-truncate me-2" style="max-width: 160px;">
+                                <span class="fw-semibold text-slate-800">{{ item.product.pname }}</span>
+                                <span class="text-muted">x {{ item.quantity }}</span>
+                            </div>
+                            <span class="fw-semibold text-slate-700">₹{% widthratio item.product.pprice 1 item.quantity %}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Price breakdown -->
+                    <div class="d-flex flex-column gap-2 mb-4">
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span>Delivery Charges</span>
+                            <span class="text-success fw-semibold">FREE</span>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold text-slate-900 border-top pt-2 mt-1">
+                            <span>Total Payable</span>
+                            <span style="color: var(--customer-primary-dark); font-size: 1.25rem;">₹{{ grand_total }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Final Button -->
+                    <button type="submit" class="btn-premium btn-customer w-100 py-3 d-flex align-items-center justify-content-center gap-2" style="background: linear-gradient(135deg, #fb641b 0%, #ff5500 100%); border-color: #ff5500;">
+                        <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                        <span>Confirm Checkout</span>
+                    </button>
+                    <div class="text-center mt-2" style="font-size: 0.75rem; color: var(--text-muted);">
+                        <i data-lucide="lock" style="width: 10px; height: 10px; display: inline;"></i> 256-bit Secure Transaction
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    // Select address handler
+    function selectAddress(card, id) {
+        // Unselect all cards
+        let cards = document.querySelectorAll('.checkout-address-card');
+        cards.forEach(c => c.classList.remove('selected'));
+        
+        // Select this card
+        card.classList.add('selected');
+        
+        // Check corresponding radio input
+        let radio = card.querySelector('input[type="radio"]');
+        if (radio) {
+            radio.checked = true;
+        }
+
+        // Toggle visibility of new address input fields
+        let formBlock = document.getElementById('new-address-form-block');
+        if (id === 'new') {
+            formBlock.style.display = 'block';
+            // Make inputs required
+            formBlock.querySelectorAll('input').forEach(input => input.required = true);
+        } else {
+            formBlock.style.display = 'none';
+            // Remove required tag
+            formBlock.querySelectorAll('input').forEach(input => input.required = false);
+        }
+    }
+
+    // Select payment method handler
+    function selectPayment(method, card) {
+        // Update hidden input
+        document.getElementById('payment_method').value = method;
+        
+        // Unselect all payment cards
+        let cards = document.querySelectorAll('.payment-method-card');
+        cards.forEach(c => {
+            c.classList.remove('selected');
+            let icon = c.querySelector('i');
+            if (icon) icon.className = 'text-muted'; // Reset colors
+        });
+        
+        // Select this card
+        card.classList.add('selected');
+        let icon = card.querySelector('i');
+        if (icon) icon.className = 'text-teal'; // Color icon
+
+        // Toggle visibility & set required inputs
+        const cardBlock = document.getElementById('card-details-block');
+        const upiBlock = document.getElementById('upi-qr-block');
+
+        const cardName = document.getElementById('card_name');
+        const cardNumber = document.getElementById('card_number');
+        const cardExpiry = document.getElementById('card_expiry');
+        const cardCvv = document.getElementById('card_cvv');
+        const upiTxnId = document.getElementById('upi_transaction_id');
+
+        if (method === 'Credit/Debit Card') {
+            cardBlock.style.display = 'block';
+            upiBlock.style.display = 'none';
+
+            cardName.required = true;
+            cardNumber.required = true;
+            cardExpiry.required = true;
+            cardCvv.required = true;
+            upiTxnId.required = false;
+        } else if (method === 'UPI / NetBanking') {
+            cardBlock.style.display = 'none';
+            upiBlock.style.display = 'block';
+
+            cardName.required = false;
+            cardNumber.required = false;
+            cardExpiry.required = false;
+            cardCvv.required = false;
+            upiTxnId.required = true;
+        } else {
+            // Cash on Delivery
+            cardBlock.style.display = 'none';
+            upiBlock.style.display = 'none';
+
+            cardName.required = false;
+            cardNumber.required = false;
+            cardExpiry.required = false;
+            cardCvv.required = false;
+            upiTxnId.required = false;
+        }
+    }
+
+    // Auto formatting input helpers for payment details
+    document.addEventListener('DOMContentLoaded', () => {
+        const cardNumberInput = document.getElementById('card_number');
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                let formatted = '';
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formatted += ' ';
+                    }
+                    formatted += value[i];
+                }
+                e.target.value = formatted;
+            });
+        }
+
+        const cardExpiryInput = document.getElementById('card_expiry');
+        if (cardExpiryInput) {
+            cardExpiryInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\//g, '').replace(/[^0-9]/gi, '');
+                if (value.length > 2) {
+                    e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                } else {
+                    e.target.value = value;
+                }
+            });
+        }
+
+        const cardCvvInput = document.getElementById('card_cvv');
+        if (cardCvvInput) {
+            cardCvvInput.addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/[^0-9]/gi, '');
+            });
+        }
+
+        const upiTxnInput = document.getElementById('upi_transaction_id');
+        if (upiTxnInput) {
+            upiTxnInput.addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/[^0-9]/gi, '');
+            });
+        }
+    });
+</script>
+</body>
+</html>

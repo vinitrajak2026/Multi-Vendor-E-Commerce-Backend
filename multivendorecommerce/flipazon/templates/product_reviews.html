@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews - {{ product.pname }} - Flipazon</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'flipazon/dashboard.css' %}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-light">
+
+<!-- Sticky Header Navigation -->
+<nav class="sub-navbar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a href="/flipazon/customer-dashboard/" class="sub-nav-brand">
+            <i data-lucide="shopping-bag" class="text-teal" style="color: var(--customer-primary);"></i>
+            <span class="fw-bold">Flipazon</span>
+        </a>
+        <div class="sub-nav-links">
+            <a href="/flipazon/customer-dashboard/" class="sub-nav-link">
+                <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/flipazon/all-products/" class="sub-nav-link active" style="color: var(--customer-primary); font-weight: 600;">
+                <i data-lucide="store" style="width: 16px; height: 16px;"></i>
+                <span>Market</span>
+            </a>
+            <a href="/flipazon/view-cart/" class="sub-nav-link">
+                <i data-lucide="shopping-cart" style="width: 16px; height: 16px;"></i>
+                <span>Cart</span>
+            </a>
+            <a href="/flipazon/view-wishlist/" class="sub-nav-link">
+                <i data-lucide="heart" style="width: 16px; height: 16px;"></i>
+                <span>Wishlist</span>
+            </a>
+            <a href="/flipazon/view-orders/" class="sub-nav-link">
+                <i data-lucide="package" style="width: 16px; height: 16px;"></i>
+                <span>Orders</span>
+            </a>
+            <a href="/flipazon/logout/" class="btn-premium btn-danger-custom btn-sm" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container animate-fade-in mb-5">
+    <div class="max-width-800 mx-auto" style="max-width: 800px;">
+        <!-- Product Details Summary -->
+        <div class="custom-card text-center mb-5 animate-slide-in">
+            <span class="product-badge mb-2 d-inline-block">{{ product.ptype }}</span>
+            <h2 class="fw-bold mb-2" style="letter-spacing: -0.03em;">{{ product.pname }}</h2>
+            <div class="d-flex justify-content-center align-items-center gap-2 mt-2">
+                <div class="rating-badge" style="font-size: 1.1rem; padding: 0.4rem 0.8rem;">
+                    <i data-lucide="star" style="width: 18px; height: 18px; fill: #d97706; stroke: #d97706;"></i>
+                    <span>{{ avg_rating }} / 5.0</span>
+                </div>
+                <span class="text-muted small">({{ reviews|length }} customer reviews)</span>
+            </div>
+        </div>
+
+        <h3 class="fw-bold mb-4" style="font-size: 1.35rem; letter-spacing: -0.02em;">Reviews Feed</h3>
+
+        <!-- Reviews list -->
+        {% if reviews %}
+            <div class="d-flex flex-column gap-3">
+                {% for review in reviews %}
+                <div class="review-card animate-fade-in">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="user-avatar customer-avatar" style="width: 32px; height: 32px; font-size: 0.9rem;">
+                                {{ review.customer.name|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <h5 class="m-0 fw-semibold" style="font-size: 0.95rem;">{{ review.customer.name }}</h5>
+                                <div class="small text-muted" style="font-size: 0.75rem;">Verified Purchaser</div>
+                            </div>
+                        </div>
+                        <span class="text-muted small" style="font-size: 0.8rem;">
+                            <i data-lucide="calendar" style="width: 12px; height: 12px; display: inline; vertical-align: text-bottom;" class="me-1"></i>
+                            {{ review.created_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+
+                    <!-- Stars rating rendering -->
+                    <div class="mb-2 review-rating-stars">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= review.rating %}
+                                <i data-lucide="star" style="width: 16px; height: 16px; fill: #fbbf24; stroke: #fbbf24;"></i>
+                            {% else %}
+                                <i data-lucide="star" style="width: 16px; height: 16px; color: var(--border-color);"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <p class="text-slate-700 m-0" style="font-size: 0.95rem; line-height: 1.5; font-style: italic;">
+                        "{{ review.review }}"
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info d-flex align-items-center p-4" style="border-radius: var(--radius-md);">
+                <i data-lucide="info" class="me-2" style="width: 20px; height: 20px;"></i>
+                <div>No reviews have been written for this product yet. Be the first to add one!</div>
+            </div>
+        {% endif %}
+
+        <div class="text-center mt-5 d-flex justify-content-center gap-2">
+            <a href="/flipazon/all-products/" class="btn-premium btn-light border">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                <span>Back to Market</span>
+            </a>
+            <a href="/flipazon/add-review/{{ product.pid }}/" class="btn-premium btn-customer">
+                <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+                <span>Write a Review</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Flipazon</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'flipazon/dashboard.css' %}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, rgba(13, 148, 136, 0.05) 90.2%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            border-radius: var(--radius-xl);
+            background: #ffffff;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: var(--shadow-xl);
+            padding: 2.5rem;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .demo-accounts {
+            background-color: #f8fafc;
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+        .demo-badge {
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            background-color: #e2e8f0;
+            color: var(--text-main);
+            font-weight: 600;
+            transition: var(--transition-smooth);
+        }
+        .demo-badge:hover {
+            background-color: var(--seller-primary-light);
+            color: var(--seller-primary-dark);
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="text-center mb-4">
+        <div class="d-inline-flex align-items-center justify-content-center bg-indigo-light text-indigo p-3 rounded-circle mb-3" style="background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(13,148,136,0.1));">
+            <i data-lucide="shopping-bag" class="text-primary" style="width: 32px; height: 32px; color: var(--seller-primary) !important;"></i>
+        </div>
+        <h2 class="fw-bold tracking-tight text-slate-900" style="font-size: 1.75rem;">Welcome to Flipazon</h2>
+        <p class="text-muted small">Sign in to access your custom dashboard</p>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger d-flex align-items-center p-3 mb-4" role="alert" style="border-radius: var(--radius-md); font-size: 0.9rem;">
+        <i data-lucide="alert-circle" class="me-2" style="width: 18px; height: 18px;"></i>
+        <div>{{ error }}</div>
+    </div>
+    {% endif %}
+
+    <form method="post" class="customer-form">
+        {% csrf_token %}
+
+        <div class="mb-3 form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0" style="border-radius: var(--radius-md) 0 0 var(--radius-md); border-color: var(--border-color);"><i data-lucide="mail" style="width: 18px; height: 18px; color: var(--text-muted);"></i></span>
+                <input type="email" id="email" name="email" class="form-control border-start-0" placeholder="name@example.com" required style="border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;">
+            </div>
+        </div>
+
+        <div class="mb-4 form-group">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0" style="border-radius: var(--radius-md) 0 0 var(--radius-md); border-color: var(--border-color);"><i data-lucide="lock" style="width: 18px; height: 18px; color: var(--text-muted);"></i></span>
+                <input type="password" id="password" name="password" class="form-control border-start-0" placeholder="••••••••" required style="border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;">
+            </div>
+        </div>
+
+        <button type="submit" class="btn-premium btn-seller w-100 py-3" style="font-size: 1rem;">
+            <span>Sign In</span>
+            <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+        </button>
+    </form>
+
+    <div class="demo-accounts">
+        <div class="fw-semibold text-slate-800 mb-2 d-flex align-items-center gap-1">
+            <i data-lucide="info" style="width: 16px; height: 16px; color: var(--seller-primary);"></i>
+            <span>Demo credentials (Click to autofill):</span>
+        </div>
+        <div class="d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <span><span class="badge bg-primary">Seller</span> revanth@gmail.com</span>
+                <span class="demo-badge" onclick="autofill('revanth@gmail.com', '12345')">Autofill</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span><span class="badge bg-teal" style="background-color: var(--customer-primary);">Customer</span> revanth1@gmail.com</span>
+                <span class="demo-badge" onclick="autofill('revanth1@gmail.com', '12345')">Autofill</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    function autofill(email, password) {
+        document.getElementById('email').value = email;
+        document.getElementById('password').value = password;
+    }
+</script>
+</body>
+</html>
